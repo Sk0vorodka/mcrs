@@ -1,20 +1,21 @@
 image: Visual Studio 2022
 
+environment:
+  # Ускоряем компиляцию Rust, чтобы уложиться в 60-минутный лимит AppVeyor
+  CARGO_PROFILE_RELEASE_OPT_LEVEL: 1
+  CARGO_PROFILE_RELEASE_LTO: false
+  CARGO_PROFILE_RELEASE_CODEGEN_UNITS: 16
+  CARGO_PROFILE_RELEASE_DEBUG: false
+  CARGO_PROFILE_RELEASE_STRIP: true
+
 install:
-  # Скачиваем установщик Rust
   - appveyor DownloadFile https://win.rustup.rs/ -FileName rustup-init.exe
-  # Сразу ставим ту версию nightly, которую требует rust-toolchain.toml проекта, чтобы не качать дважды
-  - rustup-init.exe -y --default-host x86_64-pc-windows-msvc --default-toolchain nightly-2026-09-02
+  - rustup-init.exe -y --default-host x86_64-pc-windows-msvc --default-toolchain nightly-2026-09-02 --profile minimal
   - set PATH=%PATH%;C:\Users\appveyor\.cargo\bin
-  - rustc -V
-  - cargo -V
 
 build_script:
-  # Собираем клиент (в него уже встроен внутренний сервер для запуска миров)
-  - cargo build --release -p mcrs_minecraft_client
-  # И отдельно собираем дефолтный бинарник выделенного сервера
-  - cargo build --release
+  # Собираем одним вызовом через --workspace --bins, чтобы не проверять граф дважды
+  - cargo build --release --bins
 
 artifacts:
-  # Забираем все готовые .exe файлы из папки release
   - path: target/release/*.exe
