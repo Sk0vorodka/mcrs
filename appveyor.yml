@@ -1,0 +1,16 @@
+image: Visual Studio 2022
+
+install:
+  # Проект использует rust-toolchain.toml, поэтому rustup сам докачает нужный nightly
+  - rustup update
+
+build_script:
+  # Собираем и клиент, и сервер в релизном режиме
+  - cargo build --release -p mcrs_minecraft_client -p mcrs_minecraft
+
+artifacts:
+  # Указываем, какие готовые файлы сохранить для скачивания
+  - path: target/release/mcrs_minecraft_client.exe
+    name: mcrs_client
+  - path: target/release/mcrs_minecraft.exe
+    name: mcrs_server
